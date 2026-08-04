@@ -1,5 +1,5 @@
-# GuruhoriaLLM
-GuruhoriaLLM
+# GuruphoriaLLM
+GuruphoriaLLM
 
 Chapter 1 - Intialize
     FrontEnd Backend
