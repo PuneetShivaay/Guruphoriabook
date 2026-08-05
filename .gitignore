@@ -2,11 +2,19 @@
 node_modules/
 **/node_modules/
 
-# Environment files
-.env
-.env.*
-**/.env
-**/.env.*
+# Environment files, 
+# Commented below lines, currently storing env related details also in code for my ref
+# .env
+# .env.*
+# **/.env
+# **/.env.*
+
+#Server Agents
+server/agents/
+agents/
+.agents/
+.claude/
+.windsurf/
 
 # Logs
 logs/
