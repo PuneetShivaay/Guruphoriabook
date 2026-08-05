@@ -5,3 +5,6 @@ initialise npx create-react-app
 intiallize shadcn@latest initit  preset code --template
 Add component from shadcn - npx shadcn@latest add
 
+Present :
+npx shadcn@latest init --preset b1LOZyc7DG --template next --pointer
+

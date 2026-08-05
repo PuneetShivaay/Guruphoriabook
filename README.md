@@ -1,5 +1,5 @@
-# GuruphoriaLLM
-GuruphoriaLLM
+# Guruphoriabook
+Guruphoriabook
 
 Chapter 1 - Intialize
     FrontEnd Backend
