@@ -33,4 +33,4 @@ sourceRoutes.post("/reprocess", asyncHandler(reprocessSources));
 sourceRoutes.get("/:sourceId/chunks", asyncHandler(getSourceChunks));
 sourceRoutes.get("/:sourceId", asyncHandler(getSource));
 sourceRoutes.post("/:sourceId/reprocess", asyncHandler(reprocessSource));
-sourceRoutes.delete("/:sourceId", asyncHandler(deleteSource));
+sourceRoutes.delete("/:sourceId", asyncHandler(deleteSource)); 
