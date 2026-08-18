@@ -70,6 +70,6 @@ export const useChatPreferences = create<ChatPreferencesState>()(
                     },
                 })),
         }),
-        { name: "guruphoriabook-chat-preferences" },
+        { name: "chaibook-chat-preferences" },
     ),
 );
