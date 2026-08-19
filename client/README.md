@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Client — GuruphoriaBook Web App
 
-## Getting Started
+Next.js (App Router) frontend for GuruphoriaBook. See the root [`README.md`](../README.md) for project-wide context and [`docs/`](../docs) for architecture and RAG pipeline details.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Scripts
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Start the Next.js dev server |
+| `npm run build` | Production build |
+| `npm start` | Run the production build |
+| `npm run lint` | Run ESLint |
+
+---
+
+## Requirements
+
+- Node.js 20+
+- The [server](../server) running locally (or a deployed API URL)
+- `NEXT_PUBLIC_API_URL` set in `.env.local` — see [`../docs/ENVIRONMENT.md`](../docs/ENVIRONMENT.md)
+
+---
+
+## Tech Stack
+
+- **Next.js 16** (App Router) + **React 19**
+- **Tailwind CSS** + **shadcn/ui** component primitives (`components/ui/`)
+- **TanStack Query** for server-state (fetching/caching workspaces, sources, messages)
+- **Zustand** for local/UI state (e.g. active chat stream state)
+- **Vercel AI SDK** (`ai`, `@ai-sdk/react`) for consuming the streaming chat endpoint
+- **Better Auth** client for session/auth state
+
+---
+
+## Folder Structure
+
+```text
+app/                       Next.js routes, root layout, global styles
+components/ui/             shadcn/ui primitives (buttons, dialogs, tables, etc.)
+components/providers/      React Query provider, theme provider
+features/                  Feature-sliced modules — see below
+shared/                    Cross-feature components, hooks, and lib helpers
+lib/utils.ts               Generic utilities (e.g. `cn()` class merging)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Feature modules (`features/<name>/`)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Each feature is self-contained:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```text
+features/<name>/
+├── components/    UI specific to this feature
+├── hooks/         data fetching (queries/mutations) and local state
+├── lib/           API calls, formatting, feature-specific helpers
+├── stores/         zustand store, only if the feature needs shared client state
+└── index.ts        the only file other features are allowed to import from
+```
 
-## Learn More
+| Feature | Responsibility |
+|---|---|
+| `auth` | Login, session state, protected route handling |
+| `workspaces` | Notebook list, create/rename/delete, workspace switcher |
+| `sources` | Upload/import flows, source list with status badges, source viewer (citations open here) |
+| `chat` | Conversation UI, streaming message rendering, citation chips |
+| `learn` | Learning artifact generation and viewing (summaries, flashcards, quizzes, etc.) |
+| `memory` | Long-term memory viewer/management |
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Working with the API
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- All requests go to `NEXT_PUBLIC_API_URL` (the Express server).
+- Chat responses are streamed (SSE) and rendered incrementally using the Vercel AI SDK's streaming utilities.
+- Source status (`PENDING → PROCESSING → READY/FAILED`) should be reflected live in the sources list — poll or refetch after upload/import until the source reaches a terminal state.
+- Citations returned with each assistant message should be rendered as clickable chips that open the Source Viewer for the referenced source (jumping to the relevant page/timestamp/section where possible).
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## UI Components
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Built on top of [shadcn/ui](https://ui.shadcn.com/). To add a new primitive:
+
+```powershell
+npx shadcn@latest add <component-name>
+```

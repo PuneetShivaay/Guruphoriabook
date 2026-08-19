@@ -1,10 +1,10 @@
-Notes for client
+Scratch notes file — for setup, structure and features see [`client/README.md`](./README.md) and [`docs/`](../docs).
 
-initialise npx create-react-app
+## Quick command reference
 
-intiallize shadcn@latest initit  preset code --template
-Add component from shadcn - npx shadcn@latest add
-
-Present :
+```powershell
+npx create-next-app@latest
 npx shadcn@latest init --preset b1LOZyc7DG --template next --pointer
-
+npx shadcn@latest add <component-name>
+npm run dev
+```

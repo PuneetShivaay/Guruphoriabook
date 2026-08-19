@@ -1,445 +1,233 @@
 # 📖 GuruphoriaBook LLM
 
-An end-to-end production-grade LLM application built with **TypeScript, Express, Prisma, PostgreSQL, OpenAI, Pinecone, Inngest, Better Auth, Mem0, and Tavily**.
+An AI-powered research assistant inspired by Gemini Notebook / NotebookLM — upload multiple knowledge sources into isolated **workspaces (notebooks)**, ask grounded questions, and get answers with **citations back to the original source**.
 
-guruphoriabook teaches how to build a modern Retrieval-Augmented Generation (RAG) platform from scratch, progressing from a simple Express server to an AI-powered knowledge workspace with chat, memory, web search, and learning artifacts.
+Built with **TypeScript, Express, Prisma, PostgreSQL + pgvector, OpenAI, Pinecone, Inngest, Better Auth, Mem0, Tavily, Next.js**.
 
-🔗 Repository:  
-https://github.com/PuneetShivaay/Guruphoriabook
+🔗 Repository: https://github.com/PuneetShivaay/Guruphoriabook
 
 ---
 
 ## ✨ Features
 
-- Express + TypeScript backend
-- PostgreSQL with Prisma ORM
-- Google Authentication using Better Auth
-- Multi-workspace support
-- Knowledge source management
-- Website import
-- YouTube transcript import
-- PDF upload support
-- Web search source ingestion
-- Chunking and embedding pipeline
-- Pinecone vector database integration
-- RAG-based AI chat
-- Conversation memory with Mem0
-- Live web search with Tavily
-- Learning artifact generation
-- Async workflows using Inngest
+- **Workspaces (Notebooks)** — create, rename, delete; each workspace has its own isolated knowledge base
+- **Multi-source ingestion**
+  - PDF upload (via Cloudinary + text extraction)
+  - Plain text / Markdown paste
+  - Website import (Firecrawl scraping)
+  - YouTube video import (transcript extraction)
+  - Web search results as a source (Tavily)
+- **Indexing pipeline** — extract → chunk → embed → store in Pinecone, with live status (`PENDING → PROCESSING → READY / FAILED`)
+- **Source management** — reprocess/re-index, bulk delete, per-source chunk inspection
+- **RAG chat** — retrieval-augmented, streaming answers grounded in workspace sources
+- **Citations** — every answer references the source chunk(s) it was generated from
+- **Conversation memory** — long-term user memory via Mem0 + rolling conversation summaries
+- **Live web search** — optional Tavily augmentation during chat
+- **Learning artifacts** — generate summaries, takeaways, flashcards, quizzes, mind maps, reports from sources
+- **Async processing** — indexing, summarization and artifact generation run as durable background jobs via Inngest
 
 ---
 
-# 🏗 Architecture
+## 🏗 High-Level Architecture
 
 ```text
-Route → Controller → Service → Repository → Prisma
-                  ↘ External APIs / Libs
+Client (Next.js)                         Server (Express + TypeScript)
+─────────────────                        ──────────────────────────────
+Workspaces UI      ─────HTTP/JSON────▶   Route → Controller → Service → Repository → Prisma
+Sources UI                                                  ↘ External APIs (OpenAI, Pinecone,
+Chat UI (streaming)◀────SSE stream────                        Firecrawl, Cloudinary, Tavily, Mem0)
+Learn / Artifacts UI                     Inngest ── background jobs (indexing, summaries, artifacts)
 ```
+
+See [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) for the full breakdown and
+[`docs/RAG_PIPELINE.md`](./docs/RAG_PIPELINE.md) for how ingestion, retrieval and citations work end to end.
 
 ---
 
-# 📚 Project Roadmap
+## � Project Structure
 
 ```text
-Ch1 Bootstrap
- └─ Ch2 Database
-     └─ Ch3 Auth
-         └─ Ch4 Workspaces
-             └─ Ch5 Sources CRUD
-                 └─ Ch6 Import Channels
-                     └─ Ch7 Indexing Pipeline
-                         ├─ Ch8 RAG Chat
-                         ├─ Ch9 Memory + Web Search
-                         └─ Ch10 Artifacts
+client/                     Next.js app (App Router)
+├── app/                    Routes, layout, global styles
+├── components/ui/          shadcn/ui primitives
+├── features/                Feature-sliced modules
+│   ├── auth/               Login / session
+│   ├── workspaces/         Notebook CRUD
+│   ├── sources/            Upload, import, source status, source viewer
+│   ├── chat/               RAG chat UI, streaming, citations
+│   ├── learn/              Learning artifacts (summaries, quizzes, ...)
+│   └── memory/             Long-term memory UI
+└── shared/                 Cross-feature components, hooks, lib
+
+server/                     Express + TypeScript API
+├── prisma/                 schema.prisma + migrations
+└── src/
+    ├── routes/              Express routers
+    ├── controllers/         Request/response handling
+    ├── services/             Business logic (RAG, chat, sources, artifacts, memory)
+    ├── repositories/          Prisma data access
+    ├── lib/                   Integrations: openai, pinecone, mem0, tavily, firecrawl, cloudinary, rag/
+    ├── inngest/               Background job definitions
+    ├── middleware/            Auth, upload, error handling
+    └── validators/            Zod request schemas
 ```
 
----
-
-# 🚀 Technology Stack
-
-### Backend
-
-- Node.js
-- Express.js
-- TypeScript
-
-### Database
-
-- PostgreSQL
-- Prisma ORM
-
-### Authentication
-
-- Better Auth
-- Google OAuth
-
-### AI & Search
-
-- OpenAI
-- Pinecone
-- Mem0
-- Tavily
-
-### Workflow Orchestration
-
-- Inngest
-
-### External Integrations
-
-- Firecrawl
-- Cloudinary
-- YouTube Transcript APIs
+More detail: [`server/README.md`](./server/README.md) and [`client/README.md`](./client/README.md).
 
 ---
 
-# 📂 Project Structure
+## � Technology Stack
 
-```text
-server/
-├── prisma/
-├── src/
-│   ├── controllers/
-│   ├── middleware/
-│   ├── repositories/
-│   ├── routes/
-│   ├── services/
-│   ├── validators/
-│   ├── lib/
-│   ├── utils/
-│   └── index.ts
-├── package.json
-├── tsconfig.json
-└── .env
-```
+| Layer | Tech |
+|---|---|
+| Frontend | Next.js 16, React 19, Tailwind CSS, shadcn/ui, Zustand, TanStack Query, Vercel AI SDK |
+| Backend | Node.js, Express 5, TypeScript |
+| Database | PostgreSQL (pgvector), Prisma ORM |
+| Auth | Better Auth (Google OAuth) |
+| Embeddings / LLM | OpenAI |
+| Vector store | Pinecone |
+| Long-term memory | Mem0 |
+| Web search | Tavily |
+| Website scraping | Firecrawl |
+| File storage | Cloudinary |
+| Background jobs | Inngest |
 
 ---
 
-# ⚙️ Local Development Setup
+## ⚙️ Local Development Setup
 
-## Clone Repository
+### 1. Clone
 
-```bash
+```powershell
 git clone https://github.com/PuneetShivaay/Guruphoriabook.git
-
 cd Guruphoriabook
 ```
 
-## Install Dependencies
+### 2. Start PostgreSQL (Docker)
 
-```bash
+```powershell
+docker compose up -d
+```
+
+This starts a `pgvector/pgvector:pg16` Postgres instance on `localhost:5434`.
+
+### 3. Server setup
+
+```powershell
+cd server
 npm install
 ```
 
-## Create Environment Variables
-
-Create a `.env` file:
+Create `server/.env` — see the full variable list in [`docs/ENVIRONMENT.md`](./docs/ENVIRONMENT.md):
 
 ```env
 PORT=8080
-
-DATABASE_URL=
+DATABASE_URL=postgresql://postgres:postgres@localhost:5434/guruphoriabook
 
 BETTER_AUTH_SECRET=
-BETTER_AUTH_URL=
-
+BETTER_AUTH_URL=http://localhost:8080
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
-
-CLIENT_URL=
+CLIENT_URL=http://localhost:3000
 
 OPENAI_API_KEY=
-
 PINECONE_API_KEY=
 PINECONE_INDEX=
 
 FIRECRAWL_API_KEY=
-
 MEM0_API_KEY=
-
 TAVILY_API_KEY=
 
 CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
 CLOUDINARY_UPLOAD_PRESET=
 
 INNGEST_DEV=1
 ```
 
----
+Run migrations and start the API:
 
-## Development
-
-```bash
+```powershell
+npx prisma migrate dev
 npm run dev
 ```
 
-Server:
+Server runs at `http://localhost:8080` (health check: `/health`).
 
-```text
-http://localhost:8080
+### 4. Client setup
+
+```powershell
+cd client
+npm install
 ```
 
-Health Check:
+Create `client/.env.local`:
 
-```text
-http://localhost:8080/health
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8080
 ```
 
----
-
-## Production Build
-
-```bash
-npm run build
-npm start
+```powershell
+npm run dev
 ```
 
----
-
-# 📖 Learning Journey
-
-## Chapter 1: Bootstrap
-
-Build a TypeScript Express server.
-
-### Outcomes
-
-- Express setup
-- TypeScript configuration
-- Environment variables
-- Health endpoint
+Client runs at `http://localhost:3000`.
 
 ---
 
-## Chapter 2: Database Foundation
-
-Connect PostgreSQL using Prisma.
-
-### Outcomes
-
-- Prisma setup
-- Database migrations
-- Prisma Client generation
-
----
-
-## Chapter 3: Authentication
-
-Implement Google Authentication using Better Auth.
-
-### Outcomes
-
-- User login
-- Session management
-- Protected routes
-
----
-
-## Chapter 4: Workspaces
-
-Build the first complete feature.
-
-### Outcomes
-
-- Workspace CRUD
-- Error handling
-- Validation patterns
-- Repository-Service architecture
-
----
-
-## Chapter 5: Sources CRUD
-
-Store knowledge sources.
-
-### Supported Types
-
-- Text
-- Markdown
-
-### Outcomes
-
-- Source CRUD
-- Source ownership
-- Workspace-scoped resources
-
----
-
-## Chapter 6: Import Channels
-
-Import content from multiple sources.
-
-### Supported Imports
-
-- Website
-- YouTube
-- PDF Upload
-- Web Search Results
-
----
-
-## Chapter 7: Indexing Pipeline
-
-Transform raw content into searchable knowledge.
-
-### Pipeline
-
-```text
-Source
-   ↓
-Extract
-   ↓
-Chunk
-   ↓
-Embed
-   ↓
-Pinecone
-   ↓
-READY
-```
-
-### Outcomes
-
-- Chunking
-- OpenAI embeddings
-- Pinecone indexing
-- Reprocessing workflows
-- Async jobs with Inngest
-
----
-
-## Chapter 8: RAG Chat
-
-Chat with indexed knowledge.
-
-### Outcomes
-
-- Conversation management
-- Source retrieval
-- Citation support
-- Streaming responses
-
----
-
-## Chapter 9: Memory & Web Search
-
-Add long-term memory and internet access.
-
-### Outcomes
-
-- Mem0 integration
-- Conversation summaries
-- Tavily web search
-- Context-aware conversations
-
----
-
-## Chapter 10: Learning Artifacts
-
-Generate educational material from sources.
-
-### Artifact Types
-
-- Summaries
-- Flashcards
-- Quizzes
-- Study Notes
-
-### Outcomes
-
-- Async artifact generation
-- Source-grounded learning assets
-
----
-
-# 🌐 API Overview
-
-## Health
+## 🌐 API Overview
 
 ```http
-GET /
-GET /health
-```
+GET   /health
 
-## Authentication
+/api/auth/*                                          Better Auth (Google OAuth, sessions)
 
-```http
-/api/auth/*
-```
+/api/workspaces                                      Workspace (notebook) CRUD
+/api/workspaces/:workspaceId/sources                 Source CRUD, upload, import, reprocess
+/api/workspaces/:workspaceId/sources/:sourceId/chunks View indexed chunks (for source viewer)
+/api/workspaces/:workspaceId/conversations            Conversation history
+/api/workspaces/:workspaceId/chat                     Streaming RAG chat
+/api/workspaces/:workspaceId/artifacts                Learning artifact generation
 
-## Workspaces
-
-```http
-/ api/workspaces
-```
-
-## Sources
-
-```http
-/ api/workspaces/:workspaceId/sources
-```
-
-## Conversations
-
-```http
-/ api/workspaces/:workspaceId/conversations
-```
-
-## Chat
-
-```http
-/ api/workspaces/:workspaceId/chat
-```
-
-## Artifacts
-
-```http
-/ api/workspaces/:workspaceId/artifacts
-```
-
-## Memory
-
-```http
-/ api/memory
-```
-
-## Inngest
-
-```http
-/ api/inngest
+/api/memory                                           Long-term (Mem0) memory
 ```
 
 ---
 
-# 🔄 Inngest Workflows
+## 🔄 Background Jobs (Inngest)
 
-| Chapter | Workflow | Event |
-|----------|-----------|---------|
-| Ch7 | Process Source | `source/created` |
-| Ch9 | Summarize Conversation | `conversation/summarize` |
-| Ch10 | Generate Artifact | `artifact/generate` |
-
----
-
-# 🎯 End Goal
-
-By the end of GuruphoriaBook LLM you'll have built a production-ready AI platform featuring:
-
-✅ Authentication  
-✅ Multi-tenancy  
-✅ Knowledge Management  
-✅ Vector Search  
-✅ RAG Chat  
-✅ Long-Term Memory  
-✅ Web Search  
-✅ AI Artifacts  
-✅ Async Processing
+| Trigger event | Job | Purpose |
+|---|---|---|
+| `source/created` | Process source | Extract → chunk → embed → index → mark `READY`/`FAILED` |
+| `conversation/summarize` | Summarize conversation | Rolling summary once message count crosses a threshold |
+| `artifact/generate` | Generate artifact | Produce summaries/flashcards/quizzes/etc. from selected sources |
 
 ---
 
-# 🤝 Contributing
+## 📚 Documentation
 
-Contributions, improvements, and suggestions are welcome.
+- [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) — layered architecture, folder responsibilities, request lifecycle
+- [`docs/RAG_PIPELINE.md`](./docs/RAG_PIPELINE.md) — ingestion, chunking, embeddings, retrieval, citation flow
+- [`docs/ENVIRONMENT.md`](./docs/ENVIRONMENT.md) — every environment variable, what it's for, where to get it
+- [`server/README.md`](./server/README.md) — backend-specific notes
+- [`client/README.md`](./client/README.md) — frontend-specific notes
+
+---
+
+## 🎥 Demo Video
+
+_Coming soon — will be linked here once recorded._
+
+---
+
+## 🎯 Assignment Context
+
+This project is being built for the **ChaibookLM — GenAI with JS 2026** assignment: an end-to-end NotebookLM-style RAG application supporting multi-notebook workspaces, multi-format source ingestion, grounded chat with citations, and a source viewer.
+
+---
+
+## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
@@ -448,17 +236,12 @@ Contributions, improvements, and suggestions are welcome.
 
 ---
 
-# 📜 License
+## 📜 License
 
-This project is licensed under the MIT License.
-
----
+MIT License.
 
 ## Author
 
-**Puneet Kumar**
-
-- GitHub: https://github.com/PuneetShivaay
-- Repository: https://github.com/PuneetShivaay/Guruphoriabook
+**Puneet Kumar** — [GitHub](https://github.com/PuneetShivaay)
 
 ⭐ If you find this project useful, please consider giving it a star.
